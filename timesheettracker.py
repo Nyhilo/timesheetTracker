@@ -45,15 +45,15 @@ def date(t):
 
 #main
 def main():
-    # input("Press enter to clock in...")
+    input("Press enter to clock in...")
     clockInTime = localtime()
     print("You're clocked in at " + time(clockInTime)
             + " on " + date(clockInTime) + ".")
-    # input("Press enter to clock out...")
+    input("Press enter to clock out...")
     clockOutTime = localtime()
     print("You're clocked out at " + time(clockOutTime)
             + " on " + date(clockOutTime) + ". Have a nice day!")
-    # input() # Wait for the user to close the window
+    input() # Wait for the user to close the window
 
     # Write the line to the csv file.
     with open('timesheet.csv', 'a', newline='') as f:
