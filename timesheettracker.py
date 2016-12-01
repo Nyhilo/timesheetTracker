@@ -45,22 +45,38 @@ def date(t):
 
 #main
 def main():
-    input("Press enter to clock in...")
+    tin = input("Press enter to clock in or enter a custom value with '$'...")
     clockInTime = localtime()
-    print("You're clocked in at " + time(clockInTime)
-            + " on " + date(clockInTime) + ".")
-    input("Press enter to clock out...")
+
+    if tin[:1] == "$":
+        inTime = tin[1:]
+    else:
+        inTime = time(clockInTime)
+    
+    inDate = date(clockInTime)
+
+    print("You're clocked in at " + inTime
+            + " on " + inDate + ".")
+
+    tout = input("Press enter to clock out or enter a custom value with '$'...")
     clockOutTime = localtime()
-    print("You're clocked out at " + time(clockOutTime)
-            + " on " + date(clockOutTime) + ". Have a nice day!")
-    input() # Wait for the user to close the window
+
+    if tout[:1] == "$":
+        outTime = tout[1:]
+    else:
+        outTime = time(clockOutTime)
+    
+    outDate = date(clockOutTime)
+
+    print("You're clocked out at " + outTime
+            + " on " + outDate + ". Have a nice day!")
+
+    input("Press enter to exit...") # Wait for the user to close the window
 
     # Write the line to the csv file.
     with open('timesheet.csv', 'a', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(
-            [date(clockInTime),time(clockInTime),time(clockOutTime)]
-        )
+        writer.writerow([inDate, inTime, outTime])
 
 if __name__ == '__main__':
     main()

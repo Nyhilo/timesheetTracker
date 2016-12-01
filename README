@@ -1,0 +1,6 @@
+A little program to help me track my timesheets at my new job.
+
+When you start the program. It asks you for an input which will log your clock in time. It will then wait for you to finish you shift and will log your clock out time when you give another input. It then appends the date and both times to a csv spreadsheet that can be viewed and edited with any spreadsheet editing program.
+
+
+I have a bat file that starts the program pinned to my taskbar using a weird workaround that involves renaming the file as an exe, pinning it, then renaming it back to a bat and fixing the properties of the shortcut.
