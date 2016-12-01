@@ -9,6 +9,70 @@ nice viewing.
 import csv
 from time import localtime
 
+#classes
+class Config:
+    def __init__(self, FileName, WriteSetting):
+        self.filename = FileName
+        self.writesetting = WriteSetting
+        self.loadLastConfig()
+
+    def __str__(self):
+        return str(self.isRunning)+" "+self.lastInTime+" "+str(self.lastInDate)
+
+    def update(self, IsRunning, LastInTime, LastInDate):
+        self.isRunning = IsRunning
+        self.lastInTime = LastInTime
+        self.lastInDate = LastInDate
+
+    def isSameDay(self, compareDate):
+        if self.lastInDate == compareDate:
+            return True
+        else: return False
+
+    def wasInterrupted(self):
+        return self.isRunning
+
+    def writeConfig(self):
+        """
+        We're utilizing the csv module for this to avoid an unnedded additional
+        imort. The file in question will have 3 lines with the isRunning,
+        lastInTime, and lastInDate values respectively.
+        """
+        # Not sure if we can write a boolean to a file so let's just convert it
+        # to a string first
+        if self.isRunning:
+            isRunningStr = "1"
+        else:
+            isRunningStr = "0"
+
+        # Then we write the information
+        with open(self.filename, self.writesetting, newline='') as file:
+            writer = csv.writer(file)
+            writer.writerows([
+                [isRunningStr],[self.lastInTime],[self.lastInDate]
+                ])
+
+    def loadLastConfig(self):
+        import os.path
+        if not os.path.exists(self.filename):
+            self.isRunning = False
+            self.lastInTime = ""
+            self.lastInDate = ""
+        else:
+            configList = []
+            with open(self.filename, newline='') as file:
+                reader = csv.reader(file, delimiter=' ', quotechar='|')
+                for row in reader:
+                    configList.append(row)
+            # Now we set the config variables to the output of the file
+            if configList[0][0] == '1':
+                self.isRunning = True
+            else:
+                self.isRunning = False
+
+            self.lastInTime = configList[1][0]
+            self.lastInDate = configList[2][0]
+
 #functions
 def time(t):
     """
@@ -46,13 +110,16 @@ def date(t):
     return month + "/" + day + "/" + year
 
 def writefile(filename, writesetting, inDate, inTime, outTime):
-    # Write the line to the csv file.
-    with open('timesheet.csv', 'a', newline='') as f:
-        writer = csv.writer(f)
+    """
+    Writes a row containing a Date and two Time values to the specified file.
+    """
+    with open(filename, writesetting, newline='') as file:
+        writer = csv.writer(file)
         writer.writerow([inDate, inTime, outTime])
 
 
-#main
+# main
+
 def main():
     # Let the user initiate the clock in time.
     tin = input("Press enter to clock in or enter a custom value with '$'...")
@@ -91,6 +158,15 @@ def main():
     # Write the date, inTime and outTimes to the file.
     writefile('timesheet.csv', 'a', inDate, inTime, outTime)
     # writefile('timesheet-test.csv', 'a', inDate, inTime, outTime)
+
+"""
+def main(): #For testing
+    config = Config('config.txt', 'w')
+    config.update(True, 'someTime', 'someDate')
+    config.writeConfig()
+    config.loadLastConfig()
+    print(config)
+"""
 
 if __name__ == '__main__':
     main()
