@@ -170,34 +170,34 @@ def missedADayDialog(writefilename, writesetting, config):
             "Would you like to fix the clockout time of that day? [Y/N] "
             ).lower().strip()
 
-        while not (cont == "y" or cont == "n"):
-            cont = input(
-                "Would you like to fix the clockout time of that day? [Y/N] "
-                ).lower().strip()
+    while not (cont == "y" or cont == "n"):
+        cont = input(
+            "Would you like to fix the clockout time of that day? [Y/N] "
+            ).lower().strip()
 
-        # If they don't want to fix the error, send them to the normal dialog
-        if cont == "n":
-            standardUseDialog(writefilename, writesetting, config)
-        else:   # Otherwise they get a different dialog
-            correctedOutTime = input(
-                "Please enter the time you would've clocked out: "
-                )
+    # If they don't want to fix the error, send them to the normal dialog
+    if cont == "n":
+        standardUseDialog(writefilename, writesetting, config)
+    else:   # Otherwise they get a different dialog
+        correctedOutTime = input(
+            "Please enter the time you would've clocked out: "
+            )
 
-            # Write the correction to the file using the logged in time and date
-            # found in the config file.
-            writefile(writefilename, writesetting,
-                config.lastInDate, config.lastInTime, correctedOutTime)
+        # Write the correction to the file using the logged in time and date
+        # found in the config file.
+        writefile(writefilename, writesetting,
+            config.lastInDate, config.lastInTime, correctedOutTime)
 
-            # Write the config
-            config.isRunning = False
-            config.writeConfig()
+        # Write the config
+        config.isRunning = False
+        config.writeConfig()
 
-            print("Your clock out time, " + correctedOutTime + " on "
-                + config.lastInDate + " has been logged.")
+        print("Your clock out time, " + correctedOutTime + " on "
+            + config.lastInDate + " has been logged.")
 
-            # Start the standard dialog.
-            # The user can quit out before givng input here without issue
-            standardUseDialog(writefilename, writesetting, config)
+        # Start the standard dialog.
+        # The user can quit out before givng input here without issue
+        standardUseDialog(writefilename, writesetting, config)
 
 def wasInterruptedDialog(writefilename, writesetting, config):
     # Date to compare to the logged date in the config
