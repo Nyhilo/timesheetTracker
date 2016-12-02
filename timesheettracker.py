@@ -11,7 +11,7 @@ from time import localtime
 
 #classes
 class Config:
-    def __init__(self, FileName, WriteSetting):
+    def __init__(self, FileName, WriteSetting='w'):
         self.filename = FileName
         self.writesetting = WriteSetting
         self.loadLastConfig()
@@ -24,8 +24,8 @@ class Config:
         self.lastInTime = LastInTime
         self.lastInDate = LastInDate
 
-    def isSameDay(self, compareDate):
-        if self.lastInDate == compareDate:
+    def isDifferentDay(self, compareDate):
+        if self.lastInDate != compareDate:
             return True
         else: return False
 
@@ -117,10 +117,7 @@ def writefile(filename, writesetting, inDate, inTime, outTime):
         writer = csv.writer(file)
         writer.writerow([inDate, inTime, outTime])
 
-
-# main
-
-def main():
+def standardUseDialog(writefilename, writesetting, config):
     # Let the user initiate the clock in time.
     tin = input("Press enter to clock in or enter a custom value with '$'...")
     clockInTime = localtime()
@@ -131,9 +128,13 @@ def main():
         inTime = tin[1:]
     else:
         inTime = time(clockInTime)
-    
+
     inDate = date(clockInTime)
 
+    # Set the config
+    config.update(True, inTime, inDate)
+    config.writeConfig()
+    
     print("You're clocked in at " + inTime
             + " on " + inDate + ".")
 
@@ -146,27 +147,121 @@ def main():
         outTime = tout[1:]
     else:
         outTime = time(clockOutTime)
-    
+
     outDate = date(clockOutTime)
 
     print("You're clocked out at " + outTime
             + " on " + outDate + ". Have a nice day!")
 
+    # Write the date, inTime and outTimes to the file. Set the config
+    writefile(writefilename, writesetting, inDate, inTime, outTime)
+    config.isRunning = False
+    config.writeConfig()
+
     # Wait for the user to close the window
     input("Press enter to exit...")
 
-    # Write the date, inTime and outTimes to the file.
-    writefile('timesheet.csv', 'a', inDate, inTime, outTime)
-    # writefile('timesheet-test.csv', 'a', inDate, inTime, outTime)
+def missedADayDialog(writefilename, writesetting, config):
+    print("It seems you closed the program before you clocked out on "
+        + config.lastInDate + ".")
 
-"""
-def main(): #For testing
-    config = Config('config.txt', 'w')
-    config.update(True, 'someTime', 'someDate')
-    config.writeConfig()
-    config.loadLastConfig()
-    print(config)
-"""
+    # Get some input from the user regarding if they want to fix the error
+    cont = input(
+            "Would you like to fix the clockout time of that day? [Y/N] "
+            ).lower().strip()
+
+        while not (cont == "y" or cont == "n"):
+            cont = input(
+                "Would you like to fix the clockout time of that day? [Y/N] "
+                ).lower().strip()
+
+        # If they don't want to fix the error, send them to the normal dialog
+        if cont == "n":
+            standardUseDialog(writefilename, writesetting, config)
+        else:   # Otherwise they get a different dialog
+            correctedOutTime = input(
+                "Please enter the time you would've clocked out: "
+                )
+
+            # Write the correction to the file using the logged in time and date
+            # found in the config file.
+            writefile(writefilename, writesetting,
+                config.lastInDate, config.lastInTime, correctedOutTime)
+
+            # Write the config
+            config.isRunning = False
+            config.writeConfig()
+
+            print("Your clock out time, " + correctedOutTime + " on "
+                + config.lastInDate + " has been logged.")
+
+            # Start the standard dialog.
+            # The user can quit out before givng input here without issue
+            standardUseDialog(writefilename, writesetting, config)
+
+def wasInterruptedDialog(writefilename, writesetting, config):
+    # Date to compare to the logged date in the config
+    currentDate = date(localtime())
+
+    # If the program closed just today, then the dialog is slightly different
+    if config.isDifferentDay(currentDate):
+        missedADayDialog(writefilename, writesetting, config)
+    else:
+        print("It seems you closed the program before you clocked out today.")
+        print("You clocked in at " + config.lastInTime + ".")
+
+        # Get some input from the user regarding if they want to fix the error
+        cont = input(
+            "Would you like to continue where you left off? [Y/N] "
+            ).lower().strip()
+
+        while not (cont == "y" or cont == "n"):
+            cont = input(
+                "Would you like to continue where you left off? [Y/N] "
+                ).lower().strip()
+
+        # If they don't want to fix the error, send them to the normal dialog
+        if cont == "n":
+            standardUseDialog(writefilename, writesetting, config)
+        else:   # Otherwise they get a different dialog
+            inTime = config.lastInTime
+            inDate = config.lastInDate
+
+            # Let the user initiate the clock out time.
+            tout = input("Press enter to clock out "
+                + "or enter a custom value with '$'...")
+            clockOutTime = localtime()
+
+            # Custom values can be entered for outTime by inputting $<some value>
+            if tout[:1] == "$":
+                outTime = tout[1:]
+            else:
+                outTime = time(clockOutTime)
+
+            outDate = date(clockOutTime)
+
+            print("You're clocked out at " + outTime
+                    + " on " + outDate + ". Have a nice day!")
+
+            # Write the date, inTime and outTimes to the file. Set the config
+            writefile(writefilename, writesetting, inDate, inTime, outTime)
+            config.isRunning = False
+            config.writeConfig()
+
+            # Wait for the user to close the window
+            input("Press enter to exit...")
+
+
+# main
+def main():
+    # Initiate the config object. This also loads in the last configuration
+    config = Config('config')
+
+    # If the program was closed before clocking off last time it was opened
+    if config.wasInterrupted():
+        wasInterruptedDialog('timesheet.csv', 'a', config)
+    else:
+        standardUseDialog('timesheet.csv', 'a', config)
 
 if __name__ == '__main__':
     main()
