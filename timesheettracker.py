@@ -77,7 +77,7 @@ class Config:
 def time(t):
     """
     Takes a time.struct_time object as an argument.
-    Returns a string in the format HH:mm<a/p>m.
+    Returns a string in the format HH:mm <a/p>m.
     """
     #Convert from military to standard time
     if t.tm_hour > 12:
@@ -92,7 +92,7 @@ def time(t):
     if len(hour) < 2: hour = "0" + hour
     if len(minute) < 2: minute = "0" + minute
 
-    return hour + ":" + minute + ampm
+    return hour + ":" + minute + " " + ampm
 
 def date(t):
     """
